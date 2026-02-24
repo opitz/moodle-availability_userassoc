@@ -18,8 +18,9 @@
  * Language strings.
  *
  * @package availability_userassoc
- * @copyright Waleed ul Hassan <waleed.hassan@catalyst-eu.net>
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2022 onwards Catalyst IT EU {@link https://catalyst-eu.net}
+ * @author    Waleed ul hassan <waleed.hassan@catalyst-eu.net>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 $string['description'] = 'Restrict access based on the first letter of the custom profile field employee_details (empty = alumnus).';
 $string['error_letters'] = 'Enter allowed letters as a comma-separated list (e.g. S,U,P,V,H). Only A–Z and commas are allowed.';
@@ -27,8 +28,10 @@ $string['isnotallowed'] = 'Not available for your user association type.';
 $string['label'] = 'Allowed letters';
 $string['label_help'] = 'Comma-separated letters (e.g. S,U,P,V,H). Users with an empty employee_details field are treated as alumni.';
 $string['missing'] = 'You must enter at least one allowed letter.';
-$string['pluginname'] = 'User association (employee_details)';
+$string['pluginname'] = 'User association';
 $string['privacy:metadata'] = 'The User association availability condition does not store any personal data.';
 $string['requires_employee_details'] = 'This condition uses the custom profile field shortname employee_details.';
 $string['requires_letters'] = 'User association first letter is one of: {$a->letters}';
+$string['setting_blockempty'] = 'Block users when employee_details is empty';
+$string['setting_blockempty_desc'] = 'If enabled, users with an empty employee_details profile field will not meet the condition (useful when empty represents alumni). If disabled, empty values are treated as allowed to avoid lockouts on new installs.';
 $string['title'] = 'User association';

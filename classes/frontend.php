@@ -18,8 +18,9 @@
  * Front end.
  *
  * @package availability_userassoc
- * @copyright Waleed ul Hassan <waleed.hassan@catalyst-eu.net>
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2022 onwards Catalyst IT EU {@link https://catalyst-eu.net}
+ * @author    Waleed ul hassan <waleed.hassan@catalyst-eu.net>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace availability_userassoc;
 

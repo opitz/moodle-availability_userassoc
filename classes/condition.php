@@ -18,8 +18,9 @@
  * Actual logic of the condition.
  *
  * @package availability_userassoc
- * @copyright Waleed ul Hassan <waleed.hassan@catalyst-eu.net>
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2022 onwards Catalyst IT EU {@link https://catalyst-eu.net}
+ * @author    Waleed ul hassan <waleed.hassan@catalyst-eu.net>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace availability_userassoc;
 
@@ -41,13 +42,13 @@ class condition extends \core_availability\condition {
      * @param \stdClass $structure Data structure from JSON decode.
      * @throws \coding_exception If invalid data structure.
      */
-    public function __construct($structure) {
+    public function __construct(\stdClass $structure) {
         if (!isset($structure->letters) || !is_string($structure->letters)) {
-            throw new \coding_exception('Missing or invalid ->letters for userassoc condition');
+            throw new \coding_exception('Missing or invalid property stdClass::$letters');
         }
         $this->letters = trim($structure->letters);
         if ($this->letters === '') {
-            throw new \coding_exception('Empty ->letters for userassoc condition');
+            throw new \coding_exception('Missing or invalid property stdClass::$letters');
         }
     }
 
@@ -87,26 +88,42 @@ class condition extends \core_availability\condition {
             // Fail closed if misconfigured.
             $allow = false;
         } else {
-            // Read custom profile field "employee_details".
-            // IMPORTANT: We read directly from DB because the field may be hidden and not present on $USER->profile.
-            $fieldid = $DB->get_field('user_info_field', 'id', ['shortname' => 'employee_details'], IGNORE_MISSING);
+            // If enabled, empty employee_details means "alumni" => deny.
+            $blockempty = (bool)get_config('availability_userassoc', 'blockempty');
 
-            $val = '';
-            if ($fieldid) {
+            // Find the profile field by shortname.
+            $fieldid = $DB->get_field(
+                'user_info_field',
+                'id',
+                ['shortname' => 'employee_details'],
+                IGNORE_MISSING
+            );
+
+            if (!$fieldid) {
+                // Field missing: fail open to avoid locking out sites that install the plugin
+                // but haven't configured/synced profile data yet.
+                $allow = true;
+            } else {
+                // Read user's custom profile field value.
                 $val = (string)$DB->get_field(
                     'user_info_data',
                     'data',
-                    ['userid' => $userid,
-                        'fieldid' => $fieldid],
-                    IGNORE_MISSING
+                    [
+                        'userid' => $userid,
+                        'fieldid' => $fieldid,
+                    ],
+                    IGNORE_MISSING,
                 );
+                $val = trim($val);
+
+                if ($val === '') {
+                    // Empty means alumni in UCL's model, but make it configurable to avoid lockouts.
+                    $allow = !$blockempty;
+                } else {
+                    $letter = strtoupper(substr($val, 0, 1));
+                    $allow = in_array($letter, $allowed, true);
+                }
             }
-
-            $val = trim($val);
-
-            // Empty = alumnus => NOT allowed.
-            $letter = ($val === '') ? '' : strtoupper(substr($val, 0, 1));
-            $allow = ($letter !== '' && in_array($letter, $allowed, true));
         }
 
         if ($not) {

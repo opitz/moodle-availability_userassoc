@@ -15,32 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy API implementation for availability_userassoc.
+ * Setting page.
  *
- * @package    availability_userassoc
+ * @package availability_userassoc
  * @copyright 2022 onwards Catalyst IT EU {@link https://catalyst-eu.net}
  * @author    Waleed ul hassan <waleed.hassan@catalyst-eu.net>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
 
-namespace availability_userassoc\privacy;
-
-
-use core_privacy\local\metadata\null_provider;
-
-/**
- * This plugin does not store any personal data.
- *
- * The condition configuration is stored by core availability in core tables
- * (e.g. course_modules.availability). The plugin only evaluates access at runtime.
- */
-class provider implements null_provider {
-    /**
-     * Returns the reason why this plugin stores no personal data.
-     *
-     * @return string
-     */
-    public static function get_reason(): string {
-        return 'privacy:metadata';
-    }
+if ($hassiteconfig) {
+    // Note: For availability plugins Moodle already provides a settings page.
+    // This file should only add settings to the existing $settings object.
+    $settings->add(new admin_setting_configcheckbox(
+        'availability_userassoc/blockempty',
+        get_string('setting_blockempty', 'availability_userassoc'),
+        get_string('setting_blockempty_desc', 'availability_userassoc'),
+        0
+    ));
 }

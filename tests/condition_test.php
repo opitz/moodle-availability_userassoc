@@ -18,8 +18,9 @@
  * Unit tests for the user association (employee_details) condition.
  *
  * @package availability_userassoc
- * @copyright Waleed ul Hassan <waleed.hassan@catalyst-eu.net>
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2022 onwards Catalyst IT EU {@link https://catalyst-eu.net}
+ * @author    Waleed ul hassan <waleed.hassan@catalyst-eu.net>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace availability_userassoc;
@@ -41,12 +42,6 @@ final class condition_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
 
-        // Create the custom profile field that this condition depends on.
-        $this->profilefield = $this->getDataGenerator()->create_custom_profile_field([
-            'shortname' => 'employee_details',
-            'name' => 'Employee details',
-            'datatype' => 'text',
-        ]);
 
         // Load the mock info class so that it can be used.
         require_once($CFG->dirroot . '/availability/tests/fixtures/mock_info.php');
@@ -62,6 +57,7 @@ final class condition_test extends \advanced_testcase {
         global $USER;
 
         $this->setAdminUser();
+        set_config('blockempty', 1, 'availability_userassoc');
 
         $info = new \core_availability\mock_info();
 
@@ -160,9 +156,8 @@ final class condition_test extends \advanced_testcase {
      * @throws \dml_exception
      */
     public function test_is_available(): void {
-        global $USER;
 
-        $this->setAdminUser();
+        set_config('blockempty', 1, 'availability_userassoc');
         $info = new \core_availability\mock_info();
 
         $structure = (object)[
@@ -170,14 +165,7 @@ final class condition_test extends \advanced_testcase {
         ];
         $cond = new condition($structure);
 
-        // Admin user: no value => blocked.
-        $this->assertFalse($cond->is_available(false, $info, true, $USER->id));
-
-        // Set admin as staff => allowed.
-        $this->set_field($USER->id, 'S-UCL');
-        $this->assertTrue($cond->is_available(false, $info, true, $USER->id));
-
-        // Another user.
+        // User.
         $user = $this->getDataGenerator()->create_user();
 
         // No value => blocked.
@@ -197,29 +185,76 @@ final class condition_test extends \advanced_testcase {
 
 
     /**
-     * Helper: set employee_details field value for a user.
+     * Sets a custom profile field value for a user (creates the field if needed).
      *
-     * @param int $userid
-     * @param string|null $value Null clears value
-     * @throws \dml_exception
+     * By default this targets the 'employee_details' custom field used by this plugin.
+     *
+     * @param int $userid User ID
+     * @param string|null $value Value to set, or null to delete the record
+     * @param string $shortname Custom profile field shortname
      */
-    protected function set_field(int $userid, ?string $value): void {
+    protected function set_field(int $userid, ?string $value, string $shortname = 'employee_details'): void {
         global $DB;
 
-        $fieldid = (int)$this->profilefield->id;
-        $alreadyset = array_key_exists($userid, $this->setusers);
+        // Ensure the field exists.
+        $fieldid = (int)$DB->get_field('user_info_field', 'id', ['shortname' => $shortname], IGNORE_MISSING);
+        if (!$fieldid) {
+            // Ensure there is at least one category.
+            $categoryid = (int)$DB->get_field_sql(
+                'SELECT id FROM {user_info_category} ORDER BY sortorder, id',
+                [],
+                IGNORE_MISSING
+            );
+            if (!$categoryid) {
+                $categoryid = (int)$DB->insert_record('user_info_category', (object)[
+                    'name' => 'Other fields',
+                    'sortorder' => 1,
+                ]);
+            }
 
-        if (is_null($value)) {
+            // Add the field.
+            $sortorder = (int)$DB->get_field_sql(
+                'SELECT COALESCE(MAX(sortorder), 0) FROM {user_info_field} WHERE categoryid = ?',
+                [$categoryid]
+            ) + 1;
+
+            $fieldid = (int)$DB->insert_record('user_info_field', (object)[
+                'shortname' => $shortname,
+                'name' => 'Employee details',
+                'datatype' => 'text',
+                'description' => '',
+                'descriptionformat' => FORMAT_HTML,
+                'categoryid' => $categoryid,
+                'sortorder' => $sortorder,
+                'required' => 0,
+                'locked' => 0,
+                'visible' => 0,
+                'forceunique' => 0,
+                'signup' => 0,
+                'defaultdata' => '',
+                'defaultdataformat' => FORMAT_HTML,
+                'param1' => 255,
+                'param2' => 0,
+                'param3' => 0,
+                'param4' => '',
+                'param5' => '',
+            ]);
+        }
+
+        // If null, delete any existing record.
+        if ($value === null) {
             $DB->delete_records('user_info_data', ['userid' => $userid, 'fieldid' => $fieldid]);
-            unset($this->setusers[$userid]);
             return;
         }
 
-        if ($alreadyset) {
-            $DB->set_field('user_info_data', 'data', $value, ['userid' => $userid, 'fieldid' => $fieldid]);
+        // Upsert: update if exists, insert if not.
+        $params = ['userid' => $userid, 'fieldid' => $fieldid];
+        $existingid = $DB->get_field('user_info_data', 'id', $params, IGNORE_MISSING);
+
+        if ($existingid) {
+            $DB->set_field('user_info_data', 'data', $value, ['id' => $existingid]);
         } else {
-            $DB->insert_record('user_info_data', ['userid' => $userid, 'fieldid' => $fieldid, 'data' => $value]);
-            $this->setusers[$userid] = true;
+            $DB->insert_record('user_info_data', (object)($params + ['data' => $value]));
         }
     }
 }

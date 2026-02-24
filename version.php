@@ -18,14 +18,20 @@
  * Version info.
  *
  * @package availability_userassoc
- * @copyright Waleed ul Hassan <waleed.hassan@catalyst-eu.net>
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2022 onwards Catalyst IT EU {@link https://catalyst-eu.net}
+ * @author    Waleed ul hassan <waleed.hassan@catalyst-eu.net>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'availability_userassoc';
-$plugin->version   = 2026020604;
+$plugin->version   = 2026020605;
+$plugin->supported = [405, 405];
 $plugin->requires  = 2024100700; // Moodle 4.5.
 $plugin->maturity  = MATURITY_ALPHA;
 $plugin->release   = '0.1';
+
+$plugin->dependencies = [
+    'profilefield_text' => 2024100700, // Use the version from admin/version.php for your Moodle 4.5 branch.
+];
