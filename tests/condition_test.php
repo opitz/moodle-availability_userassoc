@@ -45,6 +45,8 @@ final class condition_test extends \advanced_testcase {
 
         // Load the mock info class so that it can be used.
         require_once($CFG->dirroot . '/availability/tests/fixtures/mock_info.php');
+        require_once($CFG->dirroot . '/availability/condition/userassoc/db/install.php');
+        xmldb_availability_userassoc_install();
     }
 
     /**
@@ -196,58 +198,14 @@ final class condition_test extends \advanced_testcase {
     protected function set_field(int $userid, ?string $value, string $shortname = 'employee_details'): void {
         global $DB;
 
-        // Ensure the field exists.
         $fieldid = (int)$DB->get_field('user_info_field', 'id', ['shortname' => $shortname], IGNORE_MISSING);
-        if (!$fieldid) {
-            // Ensure there is at least one category.
-            $categoryid = (int)$DB->get_field_sql(
-                'SELECT id FROM {user_info_category} ORDER BY sortorder, id',
-                [],
-                IGNORE_MISSING
-            );
-            if (!$categoryid) {
-                $categoryid = (int)$DB->insert_record('user_info_category', (object)[
-                    'name' => 'Other fields',
-                    'sortorder' => 1,
-                ]);
-            }
+        $this->assertGreaterThan(0, $fieldid, 'Required custom profile field was not created');
 
-            // Add the field.
-            $sortorder = (int)$DB->get_field_sql(
-                'SELECT COALESCE(MAX(sortorder), 0) FROM {user_info_field} WHERE categoryid = ?',
-                [$categoryid]
-            ) + 1;
-
-            $fieldid = (int)$DB->insert_record('user_info_field', (object)[
-                'shortname' => $shortname,
-                'name' => 'Employee details',
-                'datatype' => 'text',
-                'description' => '',
-                'descriptionformat' => FORMAT_HTML,
-                'categoryid' => $categoryid,
-                'sortorder' => $sortorder,
-                'required' => 0,
-                'locked' => 0,
-                'visible' => 0,
-                'forceunique' => 0,
-                'signup' => 0,
-                'defaultdata' => '',
-                'defaultdataformat' => FORMAT_HTML,
-                'param1' => 255,
-                'param2' => 0,
-                'param3' => 0,
-                'param4' => '',
-                'param5' => '',
-            ]);
-        }
-
-        // If null, delete any existing record.
         if ($value === null) {
             $DB->delete_records('user_info_data', ['userid' => $userid, 'fieldid' => $fieldid]);
             return;
         }
 
-        // Upsert: update if exists, insert if not.
         $params = ['userid' => $userid, 'fieldid' => $fieldid];
         $existingid = $DB->get_field('user_info_data', 'id', $params, IGNORE_MISSING);
 

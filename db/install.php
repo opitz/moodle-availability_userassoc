@@ -27,55 +27,53 @@
  * Install hook for availability_userassoc.
  *
  * Ensures required custom profile field exists.
+ * @throws dml_exception
  */
 function xmldb_availability_userassoc_install(): void {
-    global $DB;
+    global $CFG, $DB;
+    require_once($CFG->dirroot . '/user/profile/lib.php');
 
-    // If field already exists, do nothing.
-    if ($DB->record_exists('user_info_field', ['shortname' => 'employee_details'])) {
+    $shortname = 'employee_details';
+
+    // If the field already exists, do nothing.
+    if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
         return;
     }
 
-    // Pick an existing category (or create one).
-    $categoryid = $DB->get_field_sql(
-        'SELECT id FROM {user_info_category} ORDER BY sortorder, id',
-        [],
-        IGNORE_MISSING
-    );
+    // Find or create a category for the field.
+    $categoryname = 'User association';
+    $category = $DB->get_record('user_info_category', ['name' => $categoryname]);
 
-    if (!$categoryid) {
-        $categoryid = $DB->insert_record('user_info_category', (object)[
-            'name' => 'Other fields',
-            'sortorder' => 1,
-        ]);
+    if (!$category) {
+        $category = new stdClass();
+        $category->name = $categoryname;
+        $category->sortorder = 999; // Put near bottom by default.
+        profile_save_category($category);
     }
 
-    // Put it at the end of the category.
-    $sortorder = (int)$DB->get_field_sql(
-            'SELECT COALESCE(MAX(sortorder), 0) FROM {user_info_field} WHERE categoryid = ?',
-            [$categoryid]
-        ) + 1;
+    // Create the text field using the profile API.
+    $field = new stdClass();
+    $field->datatype = 'text';
+    $field->shortname = $shortname;
+    $field->name = 'Employee details';
+    $field->description = '';
+    $field->descriptionformat = FORMAT_HTML;
 
-    // Create a text custom profile field: hidden + locked by default.
-    $DB->insert_record('user_info_field', (object)[
-        'shortname' => 'employee_details',
-        'name' => 'Employee details',
-        'datatype' => 'text',
-        'description' => '',
-        'descriptionformat' => FORMAT_HTML,
-        'categoryid' => $categoryid,
-        'sortorder' => $sortorder,
-        'required' => 0,
-        'locked' => 1,
-        'visible' => 0, // Hidden.
-        'forceunique' => 0,
-        'signup' => 0,
-        'defaultdata' => '',
-        'defaultdataformat' => FORMAT_HTML,
-        'param1' => 255, // Max length for text field.
-        'param2' => 0,
-        'param3' => 0,
-        'param4' => '',
-        'param5' => '',
-    ]);
+    $field->categoryid = $category->id;
+
+    // Field behaviour.
+    $field->required = 0;
+    $field->locked = 0;
+    $field->forceunique = 0;
+    $field->signup = 0;
+    $field->visible = PROFILE_VISIBLE_PRIVATE; // Adjust if you want.
+    $field->defaultdata = '';
+    $field->defaultdataformat = FORMAT_HTML;
+
+    // Text-field specific config (param1/param2 are length etc for text fields).
+    // Moodle's UI uses these, and profile_save_field will store them.
+    $field->param1 = 30;   // Display size.
+    $field->param2 = 2048; // Max length.
+
+    profile_save_field($field);
 }
