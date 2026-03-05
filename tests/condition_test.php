@@ -185,6 +185,27 @@ final class condition_test extends \advanced_testcase {
         $this->assertTrue($cond->is_available(true, $info, true, $user->id));
     }
 
+    /**
+     * Tests that empty employee_details values are blocked by default
+     * when the config does not exist yet.
+     *
+     * @covers ::is_available
+     * @throws \dml_exception
+     */
+    public function test_is_available_blocks_empty_by_default(): void {
+        unset_config('blockempty', 'availability_userassoc');
+
+        $info = new \core_availability\mock_info();
+        $structure = (object)[
+            'letters' => 'S,U,P,V,H',
+        ];
+        $cond = new condition($structure);
+
+        $user = $this->getDataGenerator()->create_user();
+
+        $this->assertFalse($cond->is_available(false, $info, true, $user->id));
+    }
+
 
     /**
      * Sets a custom profile field value for a user (creates the field if needed).
