@@ -27,6 +27,37 @@ require_once(__DIR__ . '/../../../../../lib/behat/behat_base.php');
  */
 class behat_availability_userassoc extends behat_base {
     /**
+     * Restrict a quiz with availability_userassoc letters.
+     *
+     * @Given /^quiz "(?P<quizname_string>[^"]*)" is restricted to availability_userassoc letters "(?P<letters_string>[^"]*)"$/
+     * @param string $quizname
+     * @param string $letters
+     */
+    public function quiz_is_restricted_to_availability_userassoc_letters(string $quizname, string $letters): void {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot . '/mod/quiz/lib.php');
+        require_once($CFG->dirroot . '/course/lib.php');
+
+        $quiz = $DB->get_record('quiz', ['name' => $quizname], '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('quiz', (int)$quiz->id, 0, false, MUST_EXIST);
+
+        $availability = json_encode((object)[
+            'op' => '&',
+            'show' => true,
+            'c' => [
+                (object)[
+                    'type' => 'userassoc',
+                    'letters' => $letters,
+                ],
+            ],
+        ]);
+
+        $DB->set_field('course_modules', 'availability', $availability, ['id' => $cm->id]);
+        rebuild_course_cache((int)$cm->course, true);
+    }
+
+    /**
      * Unsets plugin config for blockempty.
      *
      * @Given /^I unset availability_userassoc blockempty config$/
