@@ -20,7 +20,7 @@
  * @package availability_userassoc
  */
 
-require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
+require_once(__DIR__ . '/../../../../../lib/behat/behat_base.php');
 
 /**
  * Behat steps to validate user association availability checks.
