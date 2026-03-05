@@ -31,11 +31,13 @@
  */
 function xmldb_availability_userassoc_install(): void {
     global $CFG, $DB;
-    require_once($CFG->dirroot . '/user/profile/lib.php');
 
-    $shortname = 'employee_details';
+    require_once($CFG->dirroot . '/user/profile/lib.php');
+    require_once($CFG->dirroot . '/user/profile/definelib.php');
+    require_once($CFG->dirroot . '/user/profile/field/text/define.class.php');
 
     // If the field already exists, do nothing.
+    $shortname = 'employee_details';
     if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
         return;
     }
@@ -51,7 +53,8 @@ function xmldb_availability_userassoc_install(): void {
         profile_save_category($category);
     }
 
-    // Create the text field using the profile API.
+
+    // Create the profile.
     $field = new stdClass();
     $field->datatype = 'text';
     $field->shortname = $shortname;
@@ -75,5 +78,6 @@ function xmldb_availability_userassoc_install(): void {
     $field->param1 = 30;   // Display size.
     $field->param2 = 2048; // Max length.
 
-    profile_save_field($field);
+    $profileclass = new \profile_define_text();
+    $profileclass->define_save($field);
 }
