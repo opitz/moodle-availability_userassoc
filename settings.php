@@ -31,6 +31,6 @@ if ($hassiteconfig) {
         'availability_userassoc/blockempty',
         get_string('setting_blockempty', 'availability_userassoc'),
         get_string('setting_blockempty_desc', 'availability_userassoc'),
-        0
+        1
     ));
 }

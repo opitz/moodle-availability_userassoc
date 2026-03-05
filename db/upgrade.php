@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,23 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version info.
+ * Upgrade steps for availability_userassoc.
  *
  * @package availability_userassoc
- * @copyright 2022 onwards Catalyst IT EU {@link https://catalyst-eu.net}
- * @author    Waleed ul hassan <waleed.hassan@catalyst-eu.net>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Execute availability_userassoc upgrade.
+ *
+ * @param int $oldversion
+ * @return bool
+ */
+function xmldb_availability_userassoc_upgrade(int $oldversion): bool {
+    if ($oldversion < 2026030500) {
+        if (get_config('availability_userassoc', 'blockempty') === false) {
+            set_config('blockempty', 1, 'availability_userassoc');
+        }
 
-$plugin->component = 'availability_userassoc';
-$plugin->version   = 2026030500;
-$plugin->supported = [405, 405];
-$plugin->requires  = 2024100700; // Moodle 4.5.
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.1';
+        upgrade_plugin_savepoint(true, 2026030500, 'availability', 'userassoc');
+    }
 
-$plugin->dependencies = [
-    'profilefield_text' => 2024100700, // Use the version from admin/version.php for your Moodle 4.5 branch.
-];
+    return true;
+}
