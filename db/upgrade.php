@@ -27,12 +27,11 @@
  * @return bool
  */
 function xmldb_availability_userassoc_upgrade(int $oldversion): bool {
-    if ($oldversion < 2026030500) {
-        if (get_config('availability_userassoc', 'blockempty') === false) {
-            set_config('blockempty', 1, 'availability_userassoc');
-        }
+    if ($oldversion < 2026030501) {
+        // Remove legacy setting: empty employee_details is now always blocked.
+        unset_config('blockempty', 'availability_userassoc');
 
-        upgrade_plugin_savepoint(true, 2026030500, 'availability', 'userassoc');
+        upgrade_plugin_savepoint(true, 2026030501, 'availability', 'userassoc');
     }
 
     return true;

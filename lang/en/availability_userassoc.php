@@ -32,6 +32,4 @@ $string['pluginname'] = 'User association';
 $string['privacy:metadata'] = 'The User association availability condition does not store any personal data.';
 $string['requires_employee_details'] = 'This condition uses the custom profile field shortname employee_details.';
 $string['requires_letters'] = 'User association first letter is one of: {$a->letters}';
-$string['setting_blockempty'] = 'Block users when employee_details is empty';
-$string['setting_blockempty_desc'] = 'If enabled, users with an empty employee_details profile field will not meet the condition (useful when empty represents alumni). If disabled, empty values are treated as allowed to avoid lockouts on new installs.';
 $string['title'] = 'User association';

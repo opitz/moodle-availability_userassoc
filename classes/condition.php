@@ -88,12 +88,7 @@ class condition extends \core_availability\condition {
             // Fail closed if misconfigured.
             $allow = false;
         } else {
-            // Empty employee_details means "alumni" => deny by default.
-            // Keep setting for backwards compatibility, but default to secure behaviour.
-            $rawblockempty = get_config('availability_userassoc', 'blockempty');
-            $blockempty = ($rawblockempty === false || $rawblockempty === null || $rawblockempty === '')
-                ? true
-                : (bool)$rawblockempty;
+            // Empty employee_details always means alumni => deny.
 
             // Find the profile field by shortname.
             $fieldid = $DB->get_field(
@@ -121,8 +116,8 @@ class condition extends \core_availability\condition {
                 $val = trim($val);
 
                 if ($val === '') {
-                    // Empty means alumni in UCL's model, but make it configurable to avoid lockouts.
-                    $allow = !$blockempty;
+                    // Empty means alumni in UCL's model.
+                    $allow = false;
                 } else {
                     $letter = strtoupper(substr($val, 0, 1));
                     $allow = in_array($letter, $allowed, true);

@@ -15,22 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Setting page.
+ * Settings page.
  *
  * @package availability_userassoc
- * @copyright 2022 onwards Catalyst IT EU {@link https://catalyst-eu.net}
- * @author    Waleed ul hassan <waleed.hassan@catalyst-eu.net>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
-    // Note: For availability plugins Moodle already provides a settings page.
-    // This file should only add settings to the existing $settings object.
-    $settings->add(new admin_setting_configcheckbox(
-        'availability_userassoc/blockempty',
-        get_string('setting_blockempty', 'availability_userassoc'),
-        get_string('setting_blockempty_desc', 'availability_userassoc'),
-        1
-    ));
-}
+// No plugin-specific admin settings.

@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'availability_userassoc';
-$plugin->version   = 2026030500;
+$plugin->version   = 2026030501;
 $plugin->supported = [405, 405];
 $plugin->requires  = 2024100700; // Moodle 4.5.
 $plugin->maturity  = MATURITY_ALPHA;

@@ -59,7 +59,6 @@ final class condition_test extends \advanced_testcase {
         global $USER;
 
         $this->setAdminUser();
-        set_config('blockempty', 1, 'availability_userassoc');
 
         $info = new \core_availability\mock_info();
 
@@ -159,7 +158,6 @@ final class condition_test extends \advanced_testcase {
      */
     public function test_is_available(): void {
 
-        set_config('blockempty', 1, 'availability_userassoc');
         $info = new \core_availability\mock_info();
 
         $structure = (object)[
@@ -193,8 +191,6 @@ final class condition_test extends \advanced_testcase {
      * @throws \dml_exception
      */
     public function test_is_available_blocks_empty_by_default(): void {
-        unset_config('blockempty', 'availability_userassoc');
-
         $info = new \core_availability\mock_info();
         $structure = (object)[
             'letters' => 'S,U,P,V,H',

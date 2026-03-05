@@ -58,15 +58,6 @@ class behat_availability_userassoc extends behat_base {
     }
 
     /**
-     * Unsets plugin config for blockempty.
-     *
-     * @Given /^I unset availability_userassoc blockempty config$/
-     */
-    public function i_unset_availability_userassoc_blockempty_config(): void {
-        unset_config('blockempty', 'availability_userassoc');
-    }
-
-    /**
      * Checks availability for a user and letters list.
      *
      * @Then /^the availability_userassoc condition with letters "(?P<letters_string>[^"]*)" should be (available|unavailable) for user "(?P<username_string>[^"]*)"$/
