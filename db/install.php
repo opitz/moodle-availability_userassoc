@@ -35,7 +35,12 @@ function xmldb_availability_userassoc_install(): void {
 
     $shortname = 'employee_details';
 
-    // If the field already exists, do nothing.
+    // Default to blocking empty employee_details values (alumni model).
+    if (get_config('availability_userassoc', 'blockempty') === false) {
+        set_config('blockempty', 1, 'availability_userassoc');
+    }
+
+    // If the field already exists, do nothing further.
     if ($DB->record_exists('user_info_field', ['shortname' => $shortname])) {
         return;
     }

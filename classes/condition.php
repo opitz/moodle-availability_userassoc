@@ -88,8 +88,12 @@ class condition extends \core_availability\condition {
             // Fail closed if misconfigured.
             $allow = false;
         } else {
-            // If enabled, empty employee_details means "alumni" => deny.
-            $blockempty = (bool)get_config('availability_userassoc', 'blockempty');
+            // Empty employee_details means "alumni" => deny by default.
+            // Keep setting for backwards compatibility, but default to secure behaviour.
+            $rawblockempty = get_config('availability_userassoc', 'blockempty');
+            $blockempty = ($rawblockempty === false || $rawblockempty === null || $rawblockempty === '')
+                ? true
+                : (bool)$rawblockempty;
 
             // Find the profile field by shortname.
             $fieldid = $DB->get_field(
