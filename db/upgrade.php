@@ -15,10 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Settings page.
+ * Upgrade steps for availability_userassoc.
  *
  * @package availability_userassoc
  */
-defined('MOODLE_INTERNAL') || die();
 
-// No plugin-specific admin settings.
+/**
+ * Execute availability_userassoc upgrade.
+ *
+ * @param int $oldversion
+ * @return bool
+ */
+function xmldb_availability_userassoc_upgrade(int $oldversion): bool {
+    if ($oldversion < 2026030501) {
+        // Remove legacy setting: empty employee_details is now always blocked.
+        unset_config('blockempty', 'availability_userassoc');
+
+        upgrade_plugin_savepoint(true, 2026030501, 'availability', 'userassoc');
+    }
+
+    return true;
+}

@@ -59,7 +59,6 @@ final class condition_test extends \advanced_testcase {
         global $USER;
 
         $this->setAdminUser();
-        set_config('blockempty', 1, 'availability_userassoc');
 
         $info = new \core_availability\mock_info();
 
@@ -159,7 +158,6 @@ final class condition_test extends \advanced_testcase {
      */
     public function test_is_available(): void {
 
-        set_config('blockempty', 1, 'availability_userassoc');
         $info = new \core_availability\mock_info();
 
         $structure = (object)[
@@ -183,6 +181,25 @@ final class condition_test extends \advanced_testcase {
 
         // NOT logic flips it.
         $this->assertTrue($cond->is_available(true, $info, true, $user->id));
+    }
+
+    /**
+     * Tests that empty employee_details values are blocked by default
+     * when the config does not exist yet.
+     *
+     * @covers ::is_available
+     * @throws \dml_exception
+     */
+    public function test_is_available_blocks_empty_by_default(): void {
+        $info = new \core_availability\mock_info();
+        $structure = (object)[
+            'letters' => 'S,U,P,V,H',
+        ];
+        $cond = new condition($structure);
+
+        $user = $this->getDataGenerator()->create_user();
+
+        $this->assertFalse($cond->is_available(false, $info, true, $user->id));
     }
 
 
